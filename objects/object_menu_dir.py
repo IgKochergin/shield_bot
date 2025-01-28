@@ -58,16 +58,6 @@ class ObjectMenuDir:
         keyboard.add(InlineKeyboardButton('Посмотреть расписание', callback_data='obj_menu_dir_watch_graf'))
         return keyboard
 
-    def create_keyboard(self):
-        keyboard = InlineKeyboardMarkup()
-        btn1 = InlineKeyboardButton('На 3 дня вперед', callback_data='obj_menu_dir_3_days')
-        btn2 = InlineKeyboardButton('На 5 дней вперед', callback_data='obj_menu_dir_5_days')
-        btn3 = InlineKeyboardButton('На 7 дней вперед', callback_data='obj_menu_dir_7_days')
-        keyboard.add(btn1)
-        keyboard.add(btn2)
-        keyboard.add(btn3)
-        return keyboard
-
     def keyboard_graf(self):
         markup = InlineKeyboardMarkup()
         if self.current_id == 0:
@@ -88,14 +78,6 @@ class ObjectMenuDir:
             markup.add(btn1)
             markup.add(btn2)
         return markup
-
-    def create_start_keyboard(self):
-        keyboard = InlineKeyboardMarkup()
-        btn1 = InlineKeyboardButton('Завтра', callback_data='obj_menu_dir_tomorrow')
-        btn2 = InlineKeyboardButton('Указать дату', callback_data='obj_menu_dir_input')
-        keyboard.add(btn1)
-        keyboard.add(btn2)
-        return keyboard
 
     def load_graf(self, object_id):
         conn = sqlite3.connect(DB_GRAF)
@@ -195,16 +177,6 @@ class ObjectMenuDir:
                               reply_markup=self.keyboard_graf(),
                               parse_mode="Markdown")
 
-    def input_date(self):
-        self.bot.send_message(self.message.chat.id, 'Введите в формате: "дд.м.гггг" дату, с которой нужно составить график:')
-        self.bot.register_next_step_handler_by_chat_id(self.message.chat.id, self.input)
-
-    def input(self, message):
-        self.dat = message.text
-        self.bot.send_message(self.message.chat.id,
-                              'На какой срок вы хотите составить график?',
-                              reply_markup=self.create_keyboard())
-
     def input_date_change(self):
         self.bot.send_message(self.message.chat.id, 'Введите в формате: "дд.м.гггг" дату, в которой нужно поменять дату:')
         self.bot.register_next_step_handler_by_chat_id(self.message.chat.id, self.input_change)
@@ -275,10 +247,8 @@ class ObjectMenuDir:
             self.current_id = self.current_id - 1
             self.menu(call)
         elif call.data == 'obj_menu_dir_create_graf':
-            self.bot.edit_message_text('С какого дня вы хотите составить график?',
-                                  chat_id=call.message.chat.id,
-                                  message_id=call.message.message_id,
-                                  reply_markup=self.create_start_keyboard())
+            graf = Graf(self.message, self.bot, self.object_data[self.current_id])
+            graf.start()
         elif call.data == 'obj_menu_dir_watch_graf':
             self.show_graf(call)
         elif call.data == 'obj_menu_dir_next_graf':
@@ -289,23 +259,6 @@ class ObjectMenuDir:
             self.show_graf(call)
         elif call.data == 'obj_menu_dir_change_duty':
             self.input_date_change()
-        elif call.data == 'obj_menu_dir_tomorrow':
-            self.dat = date.today() + datetime.timedelta(days=1)
-            self.bot.edit_message_text('На какой срок вы хотите составить график?',
-                                       chat_id=call.message.chat.id,
-                                       message_id=call.message.message_id,
-                                       reply_markup=self.create_keyboard())
-        elif call.data == 'obj_menu_dir_input':
-            self.input_date()
-        elif call.data == 'obj_menu_dir_3_days':
-            graf = Graf(self.message, self.bot, self.object_data[self.current_id], 3, self.dat)
-            graf.start()
-        elif call.data == 'obj_menu_dir_5_days':
-            graf = Graf(self.message, self.bot, self.object_data[self.current_id], 5, self.dat)
-            graf.start()
-        elif call.data == 'obj_menu_dir_7_days':
-            graf = Graf(self.message, self.bot, self.object_data[self.current_id], 7, self.dat)
-            graf.start()
 
     def start(self):
         self.load_obj()

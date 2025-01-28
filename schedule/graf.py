@@ -15,7 +15,7 @@ DB_GRAF = "schedule.db"
 user_state = {}
 
 class Graf:
-    def __init__(self, message, bot, object_data, days, date):
+    def __init__(self, message, bot, object_data):
         self.message = message
         self.bot = bot
         self.employee_data = []
@@ -23,8 +23,6 @@ class Graf:
         self.object_data = object_data
         self.duty = ''
         self.iteration = 0
-        self.days = days-1
-        self.start_day = self.change_date(date)
 
     def _set_handlers(self):
         """Метод для настройки обработчиков бота."""
@@ -54,24 +52,28 @@ class Graf:
             df = df.fillna('')  # Заполняем пустые ячейки пустой строкой
 
             # Преобразование данных в список записей
-            duty_records = []
+            #duty_records = []
             for _, row in df.iterrows():
-                name = row['ФИО']
-                phone = row['Телефон']
-                for day in range(1, 32):  # Столбцы с числами от 1 до 31
-                    if str(day) in row and row[str(day)] == 'Д':
-                        duty_records.append((name, phone, f'2025-01-{day:02d}'))
-
-            # Занесение данных в базу
-            self.cursor.executemany('''
-            INSERT INTO duty_schedule (name, phone, date)
-            VALUES (?, ?, ?)
-            ''', duty_records)
-            self.conn.commit()
+                if self.find_employee(row['Телефон']) > 0:
+                    id = self.find_employee(row['Телефон'])
+                    phone = row['Телефон']
+                    for day in range(1, 32):  # Столбцы с числами от 1 до 31
+                        if str(day) in row and row[str(day)] == 'Д':
+                            data_slov = {'date': f'2025-{datetime.today().month}-{day:02d}',
+                                         'duty': id}
+                            self.employee_data2.append(data_slov)
+                else:
+                    self.save_name(row['ФИО'], row['Телефон'], row['Удостоверение'])
+                    self.process_excel(file_path, self.message.chat.id)
+        #нужно очищать данные из бд при каждой отправке файла, чтобы не раздувать бд.
+        #добавить функцию удаления, функцию записи графика
 
         finally:
             # Удаление временного файла
             os.remove(file_path)
+
+    def delete_data(self):
+        print("очистка бд по индексу объекта")
 
     def change_date(self, date):
         try:
@@ -135,24 +137,17 @@ class Graf:
 
     def start(self):
         self.load_bd_emp()
-        self.request_name()
+        self.bot.send_message(self.message.chat.id, 'Отправьте файл с графиком в формате .xlsx')
 
-    def request_name(self):
-        self.bot.send_message(self.message.chat.id, f'Введите ФИО дежурного на {self.get_formatted_date(self.iteration)} число:')
-        self.bot.register_next_step_handler_by_chat_id(self.message.chat.id, self.save_name)
-
-    def save_name(self, message):
-        date_slov = {}
-        date_slov['date'] = self.get_formatted_date(self.iteration)
-        self.duty = message.text
-        date_slov['duty'] = self.find_employee(message.text)
-        if self.iteration < self.days:
-            self.iteration += 1
-            self.employee_data2.append(date_slov)
-            self.request_name()
-        else:
-            self.employee_data2.append(date_slov)
-            self.insert_db()
+    def save_name(self, fio, phone, card):
+        conn = sqlite3.connect(DB_EMP)
+        cursor = conn.cursor()
+        cursor.execute("""
+                            INSERT INTO employees (fio, phone, card)
+                            VALUES (?, ?, ?)
+                        """, (fio, phone, card))
+        conn.commit()
+        conn.close()
 
     def find_employee(self, fio):
         for emp in self.employee_data:
@@ -172,11 +167,12 @@ class Graf:
         conn.close()
         self.bot.send_message(self.message.chat.id, 'График составлен')
 
+    """
     def get_formatted_date(self, i):
         day = self.start_day.day + i
         month = self.start_day.month
         year = self.start_day.year
         return f"{day}.{month}.{year}"
-
+    """
 
 
