@@ -3,6 +3,8 @@ import sqlite3
 import json
 from employee.employee import Employee
 from datetime import datetime
+import pandas as pd
+import os
 
 # Создание экземпляра бота с вашим токеном
 bot = telebot.TeleBot('7827964570:AAH2uEmeIlsFR1Z-Fe-41hXA9kj-7zlgJ1I')
@@ -23,6 +25,53 @@ class Graf:
         self.iteration = 0
         self.days = days-1
         self.start_day = self.change_date(date)
+
+    def _set_handlers(self):
+        """Метод для настройки обработчиков бота."""
+        @self.bot.message_handler(content_types=['document'])
+        def handle_file(message):
+            try:
+                # Получение и обработка файла
+                file_info = self.bot.get_file(message.document.file_id)
+                downloaded_file = self.bot.download_file(file_info.file_path)
+                file_path = f"temp_{message.document.file_name}"
+                with open(file_path, 'wb') as file:
+                    file.write(downloaded_file)
+
+                # Обработка файла
+                self.process_excel(file_path, message.chat.id)
+
+                # Уведомление пользователя
+                self.bot.reply_to(message, "Файл обработан и данные занесены в базу!")
+            except Exception as e:
+                self.bot.reply_to(message, f"Произошла ошибка при обработке файла: {e}")
+
+    def process_excel(self, file_path, chat_id):
+        """Обработка Excel-файла."""
+        try:
+            # Чтение файла Excel
+            df = pd.read_excel(file_path)
+            df = df.fillna('')  # Заполняем пустые ячейки пустой строкой
+
+            # Преобразование данных в список записей
+            duty_records = []
+            for _, row in df.iterrows():
+                name = row['ФИО']
+                phone = row['Телефон']
+                for day in range(1, 32):  # Столбцы с числами от 1 до 31
+                    if str(day) in row and row[str(day)] == 'Д':
+                        duty_records.append((name, phone, f'2025-01-{day:02d}'))
+
+            # Занесение данных в базу
+            self.cursor.executemany('''
+            INSERT INTO duty_schedule (name, phone, date)
+            VALUES (?, ?, ?)
+            ''', duty_records)
+            self.conn.commit()
+
+        finally:
+            # Удаление временного файла
+            os.remove(file_path)
 
     def change_date(self, date):
         try:
