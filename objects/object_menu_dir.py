@@ -105,7 +105,7 @@ class ObjectMenuDir:
         self.delete_other()
 
     def delete_other(self):
-        today = date.today().day
+        today = date.today().day-1
         for i in self.graf_data:
             day = i.date.split('.')
             if int(day[0]) < int(today):
@@ -175,11 +175,20 @@ class ObjectMenuDir:
         self.load_graf(self.object_data[self.current_id].id)
         text = ""
         text += f'*Объект: {self.object_data[self.current_id].name}* \n'
-        for i in self.graf_data:
-            text += f'\n*Дата:* {i.date}' \
-                    f'\nДежурный: {i.emp_fio}' \
-                    f'\nТелефон дежурного: {i.emp_phone}' \
-                    f'\nУдостоверение: {self.show_card(i.emp_card)} \n'
+        today = date.today().day-1
+
+        value = True
+        while value == True:
+            text += f'\n*{today}.{date.today().month}.{date.today().year}*'
+            for i in self.graf_data:
+                day = i.date.split('.')
+                if int(today) == int(day[0]):
+                    text += f'\nДежурный: {i.emp_fio}' \
+                        f'\nТелефон дежурного: {i.emp_phone}' \
+                        f'\nУдостоверение: {self.show_card(i.emp_card)}\n'
+            if today == 31:
+                value = False
+            today += 1
         self.bot.edit_message_text(text,
                               chat_id=call.message.chat.id,
                               message_id=call.message.message_id,

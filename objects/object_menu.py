@@ -150,7 +150,7 @@ class ObjectMenu():
                     ("Ошибка данных", "Ошибка данных", "Ошибка данных"))
         self.delete_other()
     def delete_other(self):
-        today = date.today().day
+        today = date.today().day-1
         for i in self.graf_data:
             day = i.date.split('.')
             if int(day[0]) < int(today):
