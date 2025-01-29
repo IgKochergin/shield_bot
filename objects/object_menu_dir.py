@@ -86,8 +86,8 @@ class ObjectMenuDir:
         today = self.get_formatted_date()
 
         # Получаем данные из базы
-        cursor.execute("SELECT date, object_id, employee_id FROM schedule WHERE object_id=? AND date >= ?",
-                       (object_id, today,))
+        cursor.execute("SELECT date, object_id, employee_id FROM schedule WHERE object_id=?",
+                       (object_id,))
         cards = cursor.fetchall()
         conn.close()
 
@@ -102,6 +102,15 @@ class ObjectMenuDir:
                 # Если ошибка в формате данных
                 self.graf_data.append(
                     ("Ошибка данных", "Ошибка данных", "Ошибка данных"))
+        self.delete_other()
+
+    def delete_other(self):
+        today = date.today().day
+        for i in self.graf_data:
+            day = i.date.split('.')
+            if int(day[0]) < int(today):
+                self.graf_data.remove(i)
+                self.delete_other()
 
     def get_formatted_date(self):
         start_day = date.today()

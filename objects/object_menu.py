@@ -148,6 +148,14 @@ class ObjectMenu():
                 # Если ошибка в формате данных
                 self.graf_data.append(
                     ("Ошибка данных", "Ошибка данных", "Ошибка данных"))
+        self.delete_other()
+    def delete_other(self):
+        today = date.today().day
+        for i in self.graf_data:
+            day = i.date.split('.')
+            if int(day[0]) < int(today):
+                self.graf_data.remove(i)
+                self.delete_other()
 
     def get_formatted_date(self):
         start_day = date.today()
@@ -275,10 +283,8 @@ class ObjectMenu():
             self.current_id = self.current_id - 1
             self.menu(call)
         elif call.data == 'obj_menu_create_graf':
-            bot.edit_message_text('С какого дня вы хотите составить график?',
-                                  chat_id=call.message.chat.id,
-                                  message_id=call.message.message_id,
-                                  reply_markup=self.create_start_keyboard())
+            graf = Graf(self.message, self.bot, self.object_data[self.current_id])
+            graf.start()
         elif call.data == 'obj_menu_watch_graf':
             self.show_graf(call)
         elif call.data == 'obj_menu_next_graf':
@@ -289,23 +295,6 @@ class ObjectMenu():
             self.show_graf(call)
         elif call.data == 'obj_menu_change_duty':
             self.input_date_change()
-        elif call.data == 'obj_menu_dir_tomorrow':
-            self.dat = date.today() + datetime.timedelta(days=1)
-            self.bot.edit_message_text('На какой срок вы хотите составить график?',
-                                       chat_id=call.message.chat.id,
-                                       message_id=call.message.message_id,
-                                       reply_markup=self.create_keyboard())
-        elif call.data == 'obj_menu_dir_input':
-            self.input_date()
-        elif call.data == 'obj_menu_3_days':
-            graf = Graf(self.message, self.bot, self.object_data[self.current_id], 3, self.dat)
-            graf.start()
-        elif call.data == 'obj_menu_5_days':
-            graf = Graf(self.message, self.bot, self.object_data[self.current_id], 5, self.dat)
-            graf.start()
-        elif call.data == 'obj_menu_7_days':
-            graf = Graf(self.message, self.bot, self.object_data[self.current_id], 7, self.dat)
-            graf.start()
 
 
 #передача object_data и current_id
