@@ -3,6 +3,7 @@ import sqlite3
 import json
 from employee.employee import Employee
 from datetime import datetime
+from datetime import date
 import pandas as pd
 import os
 
@@ -24,56 +25,79 @@ class Graf:
         self.duty = ''
         self.iteration = 0
 
+        self._set_handlers()
+
     def _set_handlers(self):
         """Метод для настройки обработчиков бота."""
+
         @self.bot.message_handler(content_types=['document'])
         def handle_file(message):
+            if user_state.get(message.chat.id) != 'waiting_for_file':
+                self.bot.reply_to(message, "Пожалуйста, сначала отправьте команду /start.")
+                return
+
             try:
                 # Получение и обработка файла
-                file_info = self.bot.get_file(message.document.file_id)
-                downloaded_file = self.bot.download_file(file_info.file_path)
-                file_path = f"temp_{message.document.file_name}"
-                with open(file_path, 'wb') as file:
-                    file.write(downloaded_file)
+                file_info = bot.get_file(message.document.file_id)
+                downloaded_file = bot.download_file(file_info.file_path)
+                with open("temp_график дежурств.xlsx", "wb") as new_file:
+                    new_file.write(downloaded_file)
+                bot.reply_to(message, "Файл загружен!")
 
                 # Обработка файла
-                self.process_excel(file_path, message.chat.id)
+                self.process_excel(new_file)
 
                 # Уведомление пользователя
                 self.bot.reply_to(message, "Файл обработан и данные занесены в базу!")
-            except Exception as e:
-                self.bot.reply_to(message, f"Произошла ошибка при обработке файла: {e}")
 
-    def process_excel(self, file_path, chat_id):
+                # Сбрасываем состояние пользователя
+                user_state[message.chat.id] = None
+
+            except Exception as e:
+                self.bot.reply_to(message, f"Ошибка при обработке файла: {e}")
+
+    def process_excel(self, file_path):
         """Обработка Excel-файла."""
         try:
+            if not isinstance(file_path, str):
+                file_path = file_path.name
             # Чтение файла Excel
             df = pd.read_excel(file_path)
             df = df.fillna('')  # Заполняем пустые ячейки пустой строкой
-
+            self.delete_data()
             # Преобразование данных в список записей
-            #duty_records = []
             for _, row in df.iterrows():
-                if self.find_employee(row['Телефон']) > 0:
+                if self.find_employee(row['Телефон']) != None:
                     id = self.find_employee(row['Телефон'])
                     phone = row['Телефон']
                     for day in range(1, 32):  # Столбцы с числами от 1 до 31
-                        if str(day) in row and row[str(day)] == 'Д':
-                            data_slov = {'date': f'2025-{datetime.today().month}-{day:02d}',
+                        if day in row and (row[day] == 'д' or row[day] == 'Д'):
+                            today = date.today()
+                            month = today.month
+                            year = today.year
+                            data_string = f'{day}.{month}.{year}'
+                            data_slov = {'date': data_string,
                                          'duty': id}
+                            print(data_slov)
                             self.employee_data2.append(data_slov)
                 else:
                     self.save_name(row['ФИО'], row['Телефон'], row['Удостоверение'])
-                    self.process_excel(file_path, self.message.chat.id)
         #нужно очищать данные из бд при каждой отправке файла, чтобы не раздувать бд.
         #добавить функцию удаления, функцию записи графика
+            self.insert_db()
 
         finally:
             # Удаление временного файла
-            os.remove(file_path)
+            if isinstance(file_path, str) and os.path.exists(file_path):
+                os.remove(file_path)
 
     def delete_data(self):
-        print("очистка бд по индексу объекта")
+        conn = sqlite3.connect(DB_GRAF)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM schedule WHERE object_id = ?", (self.object_data.id,))
+        conn.commit()
+        conn.close()
+        print('Данные удалены')
 
     def change_date(self, date):
         try:
@@ -124,6 +148,7 @@ class Graf:
         # Преобразуем данные в читаемый формат
         for card_id, fio, phone, card, free in cards:
             try:
+                print(card_id, fio, phone, card)
                 new_data = Employee()
                 new_data.id = card_id
                 new_data.fio = fio
@@ -138,6 +163,7 @@ class Graf:
     def start(self):
         self.load_bd_emp()
         self.bot.send_message(self.message.chat.id, 'Отправьте файл с графиком в формате .xlsx')
+        user_state[self.message.chat.id] = 'waiting_for_file'
 
     def save_name(self, fio, phone, card):
         conn = sqlite3.connect(DB_EMP)
@@ -149,9 +175,10 @@ class Graf:
         conn.commit()
         conn.close()
 
-    def find_employee(self, fio):
+    def find_employee(self, phone):
         for emp in self.employee_data:
-            if emp.fio == fio:
+            if emp.phone_number == str(phone):
+                print(emp.fio)
                 return emp.id
 
     def insert_db(self):

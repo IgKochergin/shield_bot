@@ -36,7 +36,6 @@ class EmployeeMenu:
             InlineKeyboardButton('Вперед', callback_data='emp_next'),
         )
         keyboard.add(InlineKeyboardButton('Показать свободных', callback_data='emp_free'))
-        keyboard.add(InlineKeyboardButton('Добавить', callback_data='emp_add'))
         return keyboard
 
     def markup(self):
@@ -47,7 +46,6 @@ class EmployeeMenu:
             InlineKeyboardButton('Вперед', callback_data='emp_next')
         )
         keyboard.add(InlineKeyboardButton('Показать свободных', callback_data='emp_free'))
-        keyboard.add(InlineKeyboardButton('Добавить', callback_data='emp_add'))
         return keyboard
 
     def end_keyboard(self):
@@ -57,7 +55,6 @@ class EmployeeMenu:
             InlineKeyboardButton('Удалить', callback_data='emp_delete')
         )
         keyboard.add(InlineKeyboardButton('Показать свободных', callback_data='emp_free'))
-        keyboard.add(InlineKeyboardButton('Добавить', callback_data='emp_add'))
         return keyboard
 
     def free_keyboard(self):
@@ -238,12 +235,18 @@ class EmployeeMenu:
                 # Если ошибка в формате данных
                 self.graf.append(
                     ("Ошибка данных", "Ошибка данных", "Ошибка данных"))
+        self.print_graf()
+
+    def print_graf(self):
+        for i in self.graf:
+            print(i.date, i.emp_id)
 
     def free(self, it):
         self.load_graf(it)
         for i in self.graf:
-            print(i.emp_id)
-            self.employee_data.pop(i.emp_id-1)
+            for y in self.employee_data: #print(i.emp_id)
+                if i.emp_id == y.id:
+                    self.employee_data.remove(y)
 
     def get_formatted_date(self, i):
         self.start_day = date.today()
@@ -253,10 +256,7 @@ class EmployeeMenu:
         return f"{day}.{month}.{year}"
 
     def handle_navigation(self, call):
-        if call.data == 'emp_add':
-            self.add()
-            return
-        elif call.data == 'emp_delete':
+        if call.data == 'emp_delete':
             self.delete()
         elif call.data == 'emp_next':
             self.current_id = self.current_id + 1
@@ -302,4 +302,6 @@ class EmployeeMenu:
             self.insert_db()
 
     def start(self):
+        self.employee_data = []
+        self.current_id = 0
         self.menu(None)

@@ -25,7 +25,7 @@ def initialize_db_employees():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             fio TEXT,
             phone TEXT,
-            card BOOLEAN DEFAULT 0,
+            card Text,
             is_free_today BOOLEAN DEFAULT 1
         )
     """)
