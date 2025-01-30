@@ -181,13 +181,18 @@ class ObjectMenuDir:
         while value == True:
             text += f'\n*{today}.{date.today().month}.{date.today().year}*'
             for i in self.graf_data:
+
                 day = i.date.split('.')
                 if int(today) == int(day[0]):
                     text += f'\nДежурный: {i.emp_fio}' \
                         f'\nТелефон дежурного: {i.emp_phone}' \
                         f'\nУдостоверение: {self.show_card(i.emp_card)}\n'
-            if today == 31:
-                value = False
+                if today == 31 and (day[1] == '1' or day[1]=='3' or day[1]=='5' or day[1]=='7' or day[1]=='8'or day[1]=='10'or day[1]=='12'):
+                    value = False
+                if today == 30 and (day[1] == '4' or day[1]=='6' or day[1]=='5' or day[1]=='9'or day[1]=='11'):
+                    value = False
+                if today == 28 and day[1] == '2':
+                    value = False
             today += 1
         self.bot.edit_message_text(text,
                               chat_id=call.message.chat.id,
