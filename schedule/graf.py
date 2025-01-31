@@ -9,8 +9,8 @@ import os
 
 # Создание экземпляра бота с вашим токеном
 bot = telebot.TeleBot('7827964570:AAH2uEmeIlsFR1Z-Fe-41hXA9kj-7zlgJ1I')
-DB_EMP = "employees.db"
-DB_GRAF = "schedule.db"
+DB_EMP = os.path.abspath("shield/employees.db")
+DB_GRAF = os.path.abspath("shield/schedule.db")
 
 # Словарь для хранения текущего состояния пользователей
 user_state = {}

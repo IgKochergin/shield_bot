@@ -3,9 +3,10 @@ import sqlite3
 import json
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from objects.object import Object
+import os
 
-DB_PATH = 'objects.db'
-DB_COMP = 'company.db'
+DB_PATH = os.path.abspath('shield/objects.db')
+DB_COMP = os.path.abspath('shield/company.db')
 TOKEN = '7827964570:AAH2uEmeIlsFR1Z-Fe-41hXA9kj-7zlgJ1I'
 bot = telebot.TeleBot(TOKEN)
 

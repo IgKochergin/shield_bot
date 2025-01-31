@@ -5,15 +5,16 @@ from objects.object import Object
 from schedule.graf import Graf
 from datetime import date
 from schedule.data_graf import GradForObject
+import os
 from datetime import datetime
 import datetime
 
 #в классе выводятся ВСЕ объекты компании
 
-DB_PATH = "objects.db"
-DB_COMP = "company.db"
-DB_EMP = "employees.db"
-DB_GRAF = "schedule.db"
+DB_PATH = os.path.abspath("shield/objects.db")
+DB_COMP = os.path.abspath("shield/company.db")
+DB_EMP = os.path.abspath("shield/employees.db")
+DB_GRAF = os.path.abspath("shield/schedule.db")
 user_menus = {}
 
 class ObjectMenuDir:

@@ -7,14 +7,15 @@ from schedule.graf import Graf
 from datetime import datetime
 from schedule.data_graf import GradForObject
 from datetime import date
+import os
 import datetime
 
 TOKEN = '7827964570:AAH2uEmeIlsFR1Z-Fe-41hXA9kj-7zlgJ1I'
 bot = telebot.TeleBot(TOKEN)
-DB_PATH = "objects.db"
-DB_COMP = "company.db"
-DB_EMP = "employees.db"
-DB_GRAF = "schedule.db"
+DB_PATH = os.path.abspath("shield/objects.db")
+DB_COMP = os.path.abspath("shield/company.db")
+DB_EMP = os.path.abspath("shield/employees.db")
+DB_GRAF = os.path.abspath("shield/schedule.db")
 user_menus = {}
 
 #в классе выводятся объекты только для этого начальника смены

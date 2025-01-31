@@ -1,10 +1,11 @@
 import telebot
 import sqlite3
 import random
+import os
 
 TOKEN = '7827964570:AAH2uEmeIlsFR1Z-Fe-41hXA9kj-7zlgJ1I'
 bot = telebot.TeleBot(TOKEN)
-DB_PATH = "company.db"
+DB_PATH = os.path.abspath("shield/company.db")
 chat = -4640940993
 
 class Company:

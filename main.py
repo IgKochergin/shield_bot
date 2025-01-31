@@ -16,7 +16,7 @@ user_data = {}
 
 def initialize_db_employees():
     # Подключение к базе данных
-    conn = sqlite3.connect("employees.db")
+    conn = sqlite3.connect("shield/employees.db")
     cursor = conn.cursor()
 
     # Создаем таблицу, если она еще не существует
@@ -36,7 +36,7 @@ def initialize_db_employees():
 
 def initialize_db_objects():
     # Подключение к базе данных
-    conn = sqlite3.connect("objects.db")
+    conn = sqlite3.connect("shield/objects.db")
     cursor = conn.cursor()
 
     # Создаем таблицу, если она еще не существует
@@ -55,7 +55,7 @@ def initialize_db_objects():
 
 def initialize_db_companies():
     # Подключение к базе данных
-    conn = sqlite3.connect("company.db")
+    conn = sqlite3.connect("shield/company.db")
     cursor = conn.cursor()
 
     # Создаем таблицу, если она еще не существует
@@ -76,7 +76,7 @@ def initialize_db_companies():
 
 def initialize_db_schedule():
     # Подключение к базе данных
-    conn = sqlite3.connect("schedule.db")
+    conn = sqlite3.connect("shield/schedule.db")
     cursor = conn.cursor()
 
     # Создаем таблицу, если она еще не существует

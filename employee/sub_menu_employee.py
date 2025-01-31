@@ -5,11 +5,12 @@ import json
 from employee.employee import Employee
 from datetime import date
 from schedule.data_graf import GradForObject
+import os
 
 TOKEN = '7827964570:AAH2uEmeIlsFR1Z-Fe-41hXA9kj-7zlgJ1I'
 bot = telebot.TeleBot(TOKEN)
-DB_PATH = "employees.db"
-DB_GRAF = "schedule.db"
+DB_PATH = os.path.abspath("shield/employees.db")
+DB_GRAF = os.path.abspath("shield/schedule.db")
 
 #Клавиатуры
 
