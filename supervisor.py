@@ -2,9 +2,10 @@ import telebot
 import json
 import sqlite3
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+import os
 
 
-DB_PATH = "company.db"
+DB_PATH = os.path.abspath("shield/company.db")
 TOKEN = '7827964570:AAH2uEmeIlsFR1Z-Fe-41hXA9kj-7zlgJ1I'
 bot = telebot.TeleBot(TOKEN)
 

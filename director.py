@@ -1,8 +1,9 @@
 import telebot
 import sqlite3
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+import os
 
-DB_PATH = "company.db"
+DB_PATH = os.path.abspath("shield/company.db")
 
 class Director:
     def __init__(self, message, sbot):
