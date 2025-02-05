@@ -176,30 +176,39 @@ class ObjectMenuDir:
         self.load_graf(self.object_data[self.current_id].id)
         text = ""
         text += f'*Объект: {self.object_data[self.current_id].name}* \n'
-        today = date.today().day-1
+        today = date.today().day - 1
 
         value = True
+        count = 1
         while value == True:
             text += f'\n*{today}.{date.today().month}.{date.today().year}*'
+            print(count)
             for i in self.graf_data:
-
                 day = i.date.split('.')
                 if int(today) == int(day[0]):
                     text += f'\nДежурный: {i.emp_fio}' \
-                        f'\nТелефон дежурного: {i.emp_phone}' \
-                        f'\nУдостоверение: {self.show_card(i.emp_card)}\n'
-                if today == 31 and (day[1] == '1' or day[1]=='3' or day[1]=='5' or day[1]=='7' or day[1]=='8'or day[1]=='10'or day[1]=='12'):
+                            f'\nУдостоверение: {i.emp_phone}\n' \
+                            f'\nУдостоверение: {self.show_card(i.emp_card)}\n'
+                if today == 31 and (day[1] == '1' or day[1] == '3' or day[1] == '5' or day[1] == '7' or day[1] == '8' or day[1] == '10' or day[1] == '12'):
                     value = False
-                if today == 30 and (day[1] == '4' or day[1]=='6' or day[1]=='5' or day[1]=='9'or day[1]=='11'):
+                elif today == 30 and (day[1] == '4' or day[1] == '6' or day[1] == '5' or day[1] == '9' or day[1] == '11'):
                     value = False
-                if today == 28 and day[1] == '2':
+                elif today == 28 and day[1] == '2':
                     value = False
+                if count==5:
+                    self.bot.edit_message_text(text,
+                                               chat_id=call.message.chat.id,
+                                               message_id=call.message.message_id,
+                                               reply_markup=self.keyboard_graf(),
+                                               parse_mode="Markdown")
+                    return
+            count += 1
             today += 1
         self.bot.edit_message_text(text,
-                              chat_id=call.message.chat.id,
-                              message_id=call.message.message_id,
-                              reply_markup=self.keyboard_graf(),
-                              parse_mode="Markdown")
+                                   chat_id=call.message.chat.id,
+                                   message_id=call.message.message_id,
+                                   reply_markup=self.keyboard_graf(),
+                                   parse_mode="Markdown")
 
     def input_date_change(self):
         self.bot.send_message(self.message.chat.id, 'Введите в формате: "дд.м.гггг" дату, в которой нужно поменять дату:')

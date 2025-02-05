@@ -47,9 +47,6 @@ class Graf:
                 # Обработка файла
                 self.process_excel(new_file)
 
-                # Уведомление пользователя
-                self.bot.reply_to(message, "Файл обработан и данные занесены в базу!")
-
                 # Сбрасываем состояние пользователя
                 user_state[message.chat.id] = None
 
@@ -69,6 +66,7 @@ class Graf:
             for _, row in df.iterrows():
                 if self.find_employee(row['Телефон']) != None:
                     id = self.find_employee(row['Телефон'])
+                    print(id)
                     phone = row['Телефон']
                     for day in range(1, 32):  # Столбцы с числами от 1 до 31
                         if day in row and (row[day] == 'д' or row[day] == 'Д'):
@@ -78,7 +76,7 @@ class Graf:
                             data_string = f'{day}.{month}.{year}'
                             data_slov = {'date': data_string,
                                          'duty': id}
-                            print(data_slov)
+                            #print(data_slov)
                             self.employee_data2.append(data_slov)
                 else:
                     self.save_name(row['ФИО'], row['Телефон'], row['Удостоверение'])
@@ -178,7 +176,7 @@ class Graf:
     def find_employee(self, phone):
         for emp in self.employee_data:
             if emp.phone_number == str(phone):
-                print(emp.fio)
+                #print(emp.fio)
                 return emp.id
 
     def insert_db(self):
